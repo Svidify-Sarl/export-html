@@ -2,9 +2,9 @@ const Router = require("@koa/router");
 const Koa = require("koa");
 const bodyParser = require("koa-body").default;
 const errorHandler = require("./utils/middleware/error-handler");
+const { createBearerAuth } = require("./utils/middleware/bearer-auth");
+const requestLogger = require("./utils/middleware/request-logger");
 const { validateBody } = require("./utils/middleware/validate");
-
-const logger = require("@bedrockio/logger");
 
 const { getBrowser, getPageCount } = require("./utils/browser");
 const yd = require("@bedrockio/yada");
@@ -21,11 +21,20 @@ function htmlCustom(value, { root }) {
   }
 }
 
+async function requireSource(ctx, next) {
+  const { html, url } = ctx.request.body;
+  if ((!html && !url) || (html && url)) {
+    ctx.throw(400, "Exactly one of html or url is required");
+  }
+  await next();
+}
+
 const app = new Koa();
 
 app
   .use(errorHandler)
-  .use(logger.middleware())
+  .use(requestLogger)
+  .use(createBearerAuth(process.env.EXPORT_HTML_BEARER_TOKEN))
   .use(bodyParser({ multipart: true }));
 
 const router = new Router();
@@ -73,22 +82,27 @@ router.post(
         encoding: "binary",
       }),
   }),
+  requireSource,
   async (ctx) => {
     const body = ctx.request.body;
     const browser = await getBrowser();
     const page = await browser.newPage();
-
-    if (body.url) {
-      await page.goto(body.url, { waitUntil: "load" });
-    } else {
-      await page.setContent(body.html, { waitUntil: "load" });
+    try {
+      if (body.url) {
+        await page.goto(body.url, { waitUntil: "load" });
+      } else {
+        await page.setContent(body.html, { waitUntil: "load" });
+      }
+      const options = body.export;
+      if (options.type === "png") {
+        delete options.quality;
+      }
+      ctx.response.set("content-type", `image/${options.type}`);
+      const screenshot = await page.screenshot(options);
+      ctx.body = Buffer.from(screenshot);
+    } finally {
+      await page.close();
     }
-    const options = body.export;
-    if (options.type === "png") {
-      delete options.quality;
-    }
-    ctx.response.set("content-type", `image/${options.type}`);
-    ctx.body = await page.screenshot(options).finally(() => page.close());
   }
 );
 
@@ -136,27 +150,39 @@ router.post(
       preferCSSPageSize: yd.boolean().default(false),
     }),
   }),
+  requireSource,
   async (ctx) => {
     const body = ctx.request.body;
     const browser = await getBrowser();
     const page = await browser.newPage();
-
-    if (body.url) {
-      await page.goto(body.url, { waitUntil: "load" });
-    } else {
-      await page.setContent(body.html, { waitUntil: "load" });
+    try {
+      if (body.url) {
+        await page.goto(body.url, { waitUntil: "load" });
+      } else {
+        await page.setContent(body.html, { waitUntil: "load" });
+      }
+      const pdf = await page.pdf(body.export);
+      ctx.type = "application/pdf";
+      ctx.body = Buffer.from(pdf);
+    } finally {
+      await page.close();
     }
-    ctx.body = await page.pdf(body.export).finally(() => page.close());
   }
 );
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.on("error", (err, ctx) => {
+app.on("error", (err, _ctx) => {
   // dont output stacktraces of errors that is throw with status as they are known
   if (!err.status || err.status === 500) {
-    logger.error(err);
+    console.error(
+      JSON.stringify({
+        event: "application_error",
+        message: err.message,
+        stack: err.stack,
+      })
+    );
   }
 });
 

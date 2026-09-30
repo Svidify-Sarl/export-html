@@ -7,5 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      EXPORT_HTML_BEARER_TOKEN: ${EXPORT_HTML_BEARER_TOKEN:?set EXPORT_HTML_BEARER_TOKEN}
     ports:
       - "2305:2305"

@@ -1,28 +1,17 @@
-const logger = require("@bedrockio/logger");
-const config = require("@bedrockio/config");
-
 const app = require("./app");
 
 const { getBrowser } = require("./utils/browser");
 
-const PORT = config.get("BIND_PORT");
-const HOST = config.get("BIND_HOST");
-
-const GOOGLE_CLOUD_LOGGING = config.get("GOOGLE_CLOUD_LOGGING", "boolean");
-
-if (GOOGLE_CLOUD_LOGGING) {
-  logger.setupGoogleCloud({
-    logging: true,
-  });
-} else {
-  logger.useFormatted();
-}
+const PORT = Number(process.env.BIND_PORT || process.env.PORT || 2305);
+const HOST = process.env.BIND_HOST || "0.0.0.0";
 
 module.exports = (async () => {
   await getBrowser();
 
   app.listen(PORT, HOST, () => {
-    logger.info(`Started on port //${HOST}:${PORT}`);
+    console.info(
+      JSON.stringify({ event: "server_started", host: HOST, port: PORT })
+    );
   });
   return app;
 })();
