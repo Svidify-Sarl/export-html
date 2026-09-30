@@ -7,26 +7,32 @@
   "scripts": {
     "start": "node src/index.js",
     "start:production": "node src/index",
-    "lint": "eslint src"
+    "lint": "node node_modules/eslint/bin/eslint.js src test",
+    "test": "node --test --test-isolation=none test/*.test.js",
+    "test:integration": "node test/integration.mjs"
   },
   "dependencies": {
-    "@bedrockio/config": "^2.2.3",
-    "@bedrockio/logger": "^1.0.8",
-    "@bedrockio/yada": "^1.0.40",
-    "@koa/router": "^12.0.1",
-    "koa": "^2.15.3",
-    "koa-body": "^6.0.1",
-    "puppeteer": "^22.7.0",
-    "qs": "^6.12.1"
+    "@bedrockio/yada": "1.11.2",
+    "@koa/router": "15.7.0",
+    "koa": "3.2.1",
+    "koa-body": "8.0.1",
+    "puppeteer": "25.12.0"
   },
   "devDependencies": {
-    "eslint": "^9.1.1",
-    "eslint-plugin-bedrock": "^1.0.26",
+    "@eslint/js": "9.1.1",
+    "eslint": "9.1.1",
+    "globals": "^15.3.0",
+    "pdfjs-dist": "6.3.289",
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0"
   },
   "volta": {
-    "node": "20.12.2",
-    "yarn": "1.22.19"
+    "node": "22.20.0",
+    "yarn": "1.22.22"
+  },
+  "packageManager": "yarn@1.22.22",
+  "resolutions": {
+    "lodash": "4.18.1",
+    "qs": "6.16.0"
   }
 }

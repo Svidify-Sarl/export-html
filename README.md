@@ -4,16 +4,21 @@ This is a simple Docker container that runs a JSON API service that allows HTML 
 
 _Security Note: This is intended to run as a micro service - do not directly expose to the public internet_
 
+Conversion endpoints require an `Authorization: Bearer <token>` header. Set the
+token with the `EXPORT_HTML_BEARER_TOKEN` environment variable. Tokens must be
+at least 32 bytes. The `/` and
+`/check-status` health endpoints do not require credentials.
+
 ## Usage
 
 ```bash
-docker run  -p 2305:2305 bedrockio/export-html
+docker run -e "EXPORT_HTML_BEARER_TOKEN=replace-me" -p 2305:2305 <image>
 ```
 
 Or:
 
 ```
-git clone git@github.com:bedrockio/export-html.git
+git clone git@github.com:Svidify-Sarl/export-html.git
 cd export-html
 yarn install
 yarn start
@@ -25,6 +30,7 @@ yarn start
 curl \
 -d '{"html": "<h1>Hello World</h1>"}' \
 -H "Content-Type: application/json" \
+-H "Authorization: Bearer <token>" \
 --output hello.pdf \
 -XPOST "http://localhost:2305/1/pdf"
 ```
@@ -37,6 +43,7 @@ The default format is "Letter" (US) but it can be set to other paper formats lik
 curl \
 -d '{"html": "<h1>Hello World</h1>", "export": {"format": "A4"}}' \
 -H "Content-Type: application/json" \
+-H "Authorization: Bearer <token>" \
 --output hello-a4.pdf \
 -XPOST "http://localhost:2305/1/pdf"
 ```
@@ -47,6 +54,7 @@ curl \
 curl \
 -d '{"html": "<h1>Hello World</h1>", "export": {"type": "png"}}' \
 -H "Content-Type: application/json" \
+-H "Authorization: Bearer <token>" \
 --output hello.png \
 -XPOST "http://localhost:2305/1/screenshot"
 ```
@@ -57,8 +65,22 @@ Now open `hello.png`
 
 Each API call allows Puppeteer options via `body.export`
 
-- [POST /1/pdf](https://pptr.dev/#?product=Puppeteer&version=v8.0.0&show=api-pagepdfoptions)
-- [POST /1/screenshot](https://pptr.dev/#?product=Puppeteer&version=v8.0.0&show=api-pagescreenshotoptions)
+- [POST /1/pdf](https://pptr.dev/api/puppeteer.pdfoptions)
+- [POST /1/screenshot](https://pptr.dev/api/puppeteer.screenshotoptions)
+
+## Validation
+
+Run unit checks with `yarn test` and `yarn lint`. For container integration
+checks, start the image on port 2306 and run:
+
+```bash
+EXPORT_HTML_BEARER_TOKEN=<token> \
+EXPORT_HTML_TEST_URL=http://127.0.0.1:2306 \
+yarn test:integration
+```
+
+The integration check verifies authentication, request validation, PDF binary
+output, CSS page-margin counters, screenshot output, and concurrent requests.
 
 ## Kubernetes Deployment Notes
 
@@ -94,7 +116,7 @@ spec:
                         - export-html
                 topologyKey: kubernetes.io/hostname
       containers:
-        - image: bedrockio/export-html
+        - image: <immutable-image-digest>
           imagePullPolicy: Always
           name: export-html
           resources:
@@ -105,10 +127,11 @@ spec:
               memory: "3000Mi"
               cpu: "2500m"
           env:
-            - name: NODE_ENV
-              value: "production"
-            - name: ENV_NAME
-              value: "production"
+            - name: EXPORT_HTML_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: export-html
+                  key: bearer-token
           ports:
             - name: http-server
               containerPort: 2305
