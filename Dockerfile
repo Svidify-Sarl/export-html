@@ -13,6 +13,9 @@ COPY yarn.lock /service/yarn.lock
 
 RUN yarn install --frozen-lockfile --production=true;
 
+ARG SOURCE_REVISION=unknown
+ENV EXPORT_HTML_SOURCE_REVISION=${SOURCE_REVISION}
+
 # Copy app source
 COPY . .
 

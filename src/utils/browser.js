@@ -1,35 +1,31 @@
-const puppeteer = require("puppeteer");
-
-let browserWSEndpoint;
-async function getBrowserWebsocket() {
-  if (browserWSEndpoint) return browserWSEndpoint;
-
-  const browser = await puppeteer.launch({
-    ...(process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-      ? { executablePath: "/usr/bin/chromium-browser" }
-      : {}),
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
-    headless: true,
-  });
-
-  browserWSEndpoint = browser.wsEndpoint();
-  browser.disconnect();
-  return browserWSEndpoint;
+function createBrowserManager(launch) {
+  let currentBrowser;
+  let launching;
+  return {
+    async getBrowser() {
+      if (currentBrowser?.connected) return currentBrowser;
+      if (!launching) {
+        launching = Promise.resolve().then(launch).then(browser => {
+          currentBrowser = browser;
+          browser.once("disconnected", () => {
+            if (currentBrowser === browser) { currentBrowser = undefined; launching = undefined; }
+          });
+          return browser;
+        }).catch(error => { launching = undefined; throw error; });
+      }
+      return launching;
+    },
+    getBrowserPid() { return currentBrowser?.process()?.pid; },
+  };
 }
 
-let browser;
-async function getBrowser() {
-  if (browser) return browser;
-  const browserWSEndpoint = await getBrowserWebsocket();
+const manager = createBrowserManager(() => require("puppeteer").launch({
+  ...(process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD ? { executablePath: "/usr/bin/chromium-browser" } : {}),
+  args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  headless: true,
+}));
 
-  browser = await puppeteer.connect({ browserWSEndpoint });
-  return browser;
-}
-
-exports.getBrowser = getBrowser;
-
-exports.getPageCount = async function getPageCount() {
-  const browser = await getBrowser();
-  const openPages = await browser.pages();
-  return openPages.length;
-};
+exports.createBrowserManager = createBrowserManager;
+exports.getBrowser = () => manager.getBrowser();
+exports.getBrowserPid = () => manager.getBrowserPid();
+exports.getPageCount = async () => (await manager.getBrowser()).pages().then(pages => pages.length);
