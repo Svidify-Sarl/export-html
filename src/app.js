@@ -5,8 +5,19 @@ const errorHandler = require("./utils/middleware/error-handler");
 const { createBearerAuth } = require("./utils/middleware/bearer-auth");
 const requestLogger = require("./utils/middleware/request-logger");
 const { validateBody } = require("./utils/middleware/validate");
+const { createConversionAdmission } = require("./utils/conversion-admission");
+const admission = createConversionAdmission({
+  concurrency: process.env.EXPORT_HTML_MAX_CONCURRENT,
+  queueLimit: process.env.EXPORT_HTML_MAX_QUEUED,
+  waitMs: process.env.EXPORT_HTML_QUEUE_WAIT_MS,
+});
 
-const { getBrowser, getPageCount } = require("./utils/browser");
+const { getBrowser, getPageCount, getBrowserPid } = require("./utils/browser");
+const { createResourceMeter } = require("./utils/resource-meter");
+const resourceMeter = createResourceMeter({ getBrowserPid });
+resourceMeter.start();
+const { createRenderLifecycle, waitForPrintResources } = require("./utils/render-lifecycle");
+const render = createRenderLifecycle({ getBrowser, durationMs: process.env.EXPORT_HTML_MAX_DURATION_MS });
 const yd = require("@bedrockio/yada");
 
 function urlCustom(value, { root }) {
@@ -30,11 +41,19 @@ async function requireSource(ctx, next) {
 }
 
 const app = new Koa();
+const sourceRevision = /^[a-f0-9]{40}$/.test(process.env.EXPORT_HTML_SOURCE_REVISION || "") ? process.env.EXPORT_HTML_SOURCE_REVISION : null;
+app.use(async (ctx, next) => {
+  if (sourceRevision) {
+    ctx.set("X-Converter-Revision", sourceRevision);
+  }
+  await next();
+});
 
 app
   .use(errorHandler)
   .use(requestLogger)
   .use(createBearerAuth(process.env.EXPORT_HTML_BEARER_TOKEN))
+  .use(admission.middleware)
   .use(bodyParser({ multipart: true }));
 
 const router = new Router();
@@ -50,6 +69,11 @@ router.get("/check-status", async (ctx) => {
   ctx.body = {
     pageCount: await getPageCount(),
   };
+});
+
+// Protected by the same bearer policy as conversions; public health remains small.
+router.get("/1/resources", async (ctx) => {
+  ctx.body = { ...(await resourceMeter.status()), admission: admission.status(), sourceRevision };
 });
 
 // https://pptr.dev/#?product=Puppeteer&version=v8.0.0&show=api-pagescreenshotoptions
@@ -85,9 +109,7 @@ router.post(
   requireSource,
   async (ctx) => {
     const body = ctx.request.body;
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    try {
+    ctx.body = await render(ctx, async (page) => {
       if (body.url) {
         await page.goto(body.url, { waitUntil: "load" });
       } else {
@@ -99,10 +121,8 @@ router.post(
       }
       ctx.response.set("content-type", `image/${options.type}`);
       const screenshot = await page.screenshot(options);
-      ctx.body = Buffer.from(screenshot);
-    } finally {
-      await page.close();
-    }
+      return Buffer.from(screenshot);
+    });
   }
 );
 
@@ -117,7 +137,7 @@ router.post(
       displayHeaderFooter: yd.boolean().default(true),
       headerTemplate: yd.string(),
       footerTemplate: yd.string(),
-      timeout: yd.number().default(30000),
+      timeout: yd.number().min(1).default(30000),
       omitBackground: yd.boolean().default(false),
       printBackground: yd.boolean().default(false),
       outline: yd.boolean().default(false),
@@ -153,20 +173,17 @@ router.post(
   requireSource,
   async (ctx) => {
     const body = ctx.request.body;
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    try {
+    ctx.body = await render(ctx, async (page, maximumDuration) => {
       if (body.url) {
         await page.goto(body.url, { waitUntil: "load" });
       } else {
         await page.setContent(body.html, { waitUntil: "load" });
       }
-      const pdf = await page.pdf(body.export);
+      await waitForPrintResources(page);
+      const pdf = await page.pdf({ ...body.export, timeout: Math.min(body.export.timeout, maximumDuration) });
       ctx.type = "application/pdf";
-      ctx.body = Buffer.from(pdf);
-    } finally {
-      await page.close();
-    }
+      return Buffer.from(pdf);
+    });
   }
 );
 
