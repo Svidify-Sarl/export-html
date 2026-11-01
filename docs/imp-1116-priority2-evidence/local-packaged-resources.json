@@ -1,0 +1,269 @@
+{
+  "environment": "isolated local candidate Linux container",
+  "status": "passed",
+  "observedUtc": "2026-10-02T09:51:25.206Z",
+  "checks": [
+    {
+      "name": "51 image multipage",
+      "status": 200,
+      "durationMs": 944,
+      "bytes": 1292737
+    },
+    {
+      "name": "repeat 1",
+      "status": 200,
+      "durationMs": 687,
+      "bytes": 1292737
+    },
+    {
+      "name": "repeat 2",
+      "status": 200,
+      "durationMs": 600,
+      "bytes": 1292737
+    },
+    {
+      "name": "concurrent 1",
+      "status": 200,
+      "durationMs": 600,
+      "bytes": 1292737
+    },
+    {
+      "name": "concurrent 2",
+      "status": 200,
+      "durationMs": 1223,
+      "bytes": 1292737
+    },
+    {
+      "name": "concurrent 3",
+      "status": 200,
+      "durationMs": 2014,
+      "bytes": 1292737
+    },
+    {
+      "name": "disabled timeout rejected",
+      "status": 400,
+      "durationMs": 6,
+      "bytes": 211
+    },
+    {
+      "name": "broken image rejected",
+      "status": 422,
+      "durationMs": 97,
+      "bytes": 76
+    },
+    {
+      "name": "broken requested font rejected",
+      "status": 422,
+      "durationMs": 115,
+      "bytes": 76
+    }
+  ],
+  "samples": [
+    {
+      "scope": "this converter process and container lifetime",
+      "sampleIntervalMs": 100,
+      "samples": 2238,
+      "incompleteChromiumSamples": 7,
+      "latest": {
+        "observedUtc": "2026-10-02T09:51:25.240Z",
+        "nodeRssBytes": 139923456,
+        "chromiumRssBytes": 883302400,
+        "chromiumPssBytes": 203678720,
+        "chromiumProcesses": 9,
+        "cgroupCurrentBytes": 239882240,
+        "cgroupKernelPeakBytes": 260014080,
+        "cgroupLimitBytes": null,
+        "cgroupLimitState": "unlimited",
+        "cgroupHeadroomBytes": null,
+        "hostTotalMemoryBytes": 24980430848,
+        "hostFreeMemoryBytes": 15405809664,
+        "cgroupVersion": 2,
+        "memoryCgroupScope": "resolved from process cgroup and mounted controller"
+      },
+      "sampledPeaks": {
+        "nodeRssBytes": 139923456,
+        "cgroupCurrentBytes": 257306624,
+        "cgroupKernelPeakBytes": 260014080,
+        "chromiumRssBytes": 933507072,
+        "chromiumPssBytes": 205317120
+      },
+      "interpretation": "Chromium RSS sums shared pages; PSS apportions shared pages. Process peaks are sampled; cgroupKernelPeakBytes is the kernel container lifetime high-water mark. Missing metrics are null or absent, never zero. No capacity limit is inferred.",
+      "admission": {
+        "active": 0,
+        "queued": 0,
+        "rejected": 0,
+        "concurrency": 1,
+        "queueLimit": 2,
+        "queueWaitMs": 60000
+      },
+      "sourceRevision": null
+    },
+    {
+      "scope": "this converter process and container lifetime",
+      "sampleIntervalMs": 100,
+      "samples": 2265,
+      "incompleteChromiumSamples": 7,
+      "latest": {
+        "observedUtc": "2026-10-02T09:51:27.928Z",
+        "nodeRssBytes": 146157568,
+        "chromiumRssBytes": 745242624,
+        "chromiumPssBytes": 194738176,
+        "chromiumProcesses": 7,
+        "cgroupCurrentBytes": 239038464,
+        "cgroupKernelPeakBytes": 571387904,
+        "cgroupLimitBytes": null,
+        "cgroupLimitState": "unlimited",
+        "cgroupHeadroomBytes": null,
+        "hostTotalMemoryBytes": 24980430848,
+        "hostFreeMemoryBytes": 15468990464,
+        "cgroupVersion": 2,
+        "memoryCgroupScope": "resolved from process cgroup and mounted controller"
+      },
+      "sampledPeaks": {
+        "nodeRssBytes": 146157568,
+        "cgroupCurrentBytes": 569815040,
+        "cgroupKernelPeakBytes": 571387904,
+        "chromiumRssBytes": 1261023232,
+        "chromiumPssBytes": 543254528
+      },
+      "interpretation": "Chromium RSS sums shared pages; PSS apportions shared pages. Process peaks are sampled; cgroupKernelPeakBytes is the kernel container lifetime high-water mark. Missing metrics are null or absent, never zero. No capacity limit is inferred.",
+      "admission": {
+        "active": 0,
+        "queued": 0,
+        "rejected": 0,
+        "concurrency": 1,
+        "queueLimit": 2,
+        "queueWaitMs": 60000
+      },
+      "sourceRevision": null
+    },
+    {
+      "scope": "this converter process and container lifetime",
+      "sampleIntervalMs": 100,
+      "samples": 2279,
+      "incompleteChromiumSamples": 7,
+      "latest": {
+        "observedUtc": "2026-10-02T09:51:29.233Z",
+        "nodeRssBytes": 148942848,
+        "chromiumRssBytes": 749092864,
+        "chromiumPssBytes": 197592064,
+        "chromiumProcesses": 7,
+        "cgroupCurrentBytes": 534310912,
+        "cgroupKernelPeakBytes": 582541312,
+        "cgroupLimitBytes": null,
+        "cgroupLimitState": "unlimited",
+        "cgroupHeadroomBytes": null,
+        "hostTotalMemoryBytes": 24980430848,
+        "hostFreeMemoryBytes": 15168593920,
+        "cgroupVersion": 2,
+        "memoryCgroupScope": "resolved from process cgroup and mounted controller"
+      },
+      "sampledPeaks": {
+        "nodeRssBytes": 148942848,
+        "cgroupCurrentBytes": 576851968,
+        "cgroupKernelPeakBytes": 582541312,
+        "chromiumRssBytes": 1319784448,
+        "chromiumPssBytes": 546512896
+      },
+      "interpretation": "Chromium RSS sums shared pages; PSS apportions shared pages. Process peaks are sampled; cgroupKernelPeakBytes is the kernel container lifetime high-water mark. Missing metrics are null or absent, never zero. No capacity limit is inferred.",
+      "admission": {
+        "active": 0,
+        "queued": 0,
+        "rejected": 0,
+        "concurrency": 1,
+        "queueLimit": 2,
+        "queueWaitMs": 60000
+      },
+      "sourceRevision": null
+    },
+    {
+      "scope": "this converter process and container lifetime",
+      "sampleIntervalMs": 100,
+      "samples": 2300,
+      "incompleteChromiumSamples": 8,
+      "latest": {
+        "observedUtc": "2026-10-02T09:51:31.255Z",
+        "nodeRssBytes": 150999040,
+        "chromiumRssBytes": null,
+        "chromiumPssBytes": null,
+        "chromiumProcesses": null,
+        "cgroupCurrentBytes": 547872768,
+        "cgroupKernelPeakBytes": 582541312,
+        "cgroupLimitBytes": null,
+        "cgroupLimitState": "unlimited",
+        "cgroupHeadroomBytes": null,
+        "hostTotalMemoryBytes": 24980430848,
+        "hostFreeMemoryBytes": 15159902208,
+        "cgroupVersion": 2,
+        "memoryCgroupScope": "resolved from process cgroup and mounted controller"
+      },
+      "sampledPeaks": {
+        "nodeRssBytes": 150999040,
+        "cgroupCurrentBytes": 576851968,
+        "cgroupKernelPeakBytes": 582541312,
+        "chromiumRssBytes": 1319784448,
+        "chromiumPssBytes": 546512896
+      },
+      "interpretation": "Chromium RSS sums shared pages; PSS apportions shared pages. Process peaks are sampled; cgroupKernelPeakBytes is the kernel container lifetime high-water mark. Missing metrics are null or absent, never zero. No capacity limit is inferred.",
+      "admission": {
+        "active": 0,
+        "queued": 0,
+        "rejected": 0,
+        "concurrency": 1,
+        "queueLimit": 2,
+        "queueWaitMs": 60000
+      },
+      "sourceRevision": null
+    },
+    {
+      "scope": "this converter process and container lifetime",
+      "sampleIntervalMs": 100,
+      "samples": 2312,
+      "incompleteChromiumSamples": 8,
+      "latest": {
+        "observedUtc": "2026-10-02T09:51:32.422Z",
+        "nodeRssBytes": 150999040,
+        "chromiumRssBytes": 747728896,
+        "chromiumPssBytes": 196911104,
+        "chromiumProcesses": 7,
+        "cgroupCurrentBytes": 245878784,
+        "cgroupKernelPeakBytes": 582541312,
+        "cgroupLimitBytes": null,
+        "cgroupLimitState": "unlimited",
+        "cgroupHeadroomBytes": null,
+        "hostTotalMemoryBytes": 24980430848,
+        "hostFreeMemoryBytes": 15451361280,
+        "cgroupVersion": 2,
+        "memoryCgroupScope": "resolved from process cgroup and mounted controller"
+      },
+      "sampledPeaks": {
+        "nodeRssBytes": 150999040,
+        "cgroupCurrentBytes": 576851968,
+        "cgroupKernelPeakBytes": 582541312,
+        "chromiumRssBytes": 1319784448,
+        "chromiumPssBytes": 546512896
+      },
+      "interpretation": "Chromium RSS sums shared pages; PSS apportions shared pages. Process peaks are sampled; cgroupKernelPeakBytes is the kernel container lifetime high-water mark. Missing metrics are null or absent, never zero. No capacity limit is inferred.",
+      "admission": {
+        "active": 0,
+        "queued": 0,
+        "rejected": 0,
+        "concurrency": 1,
+        "queueLimit": 2,
+        "queueWaitMs": 60000
+      },
+      "sourceRevision": null
+    }
+  ],
+  "imageSource": "51 synthetic raster URLs served by a separate private fixture container",
+  "concurrency": 3,
+  "baselinePages": 1,
+  "pdf": {
+    "pages": 4,
+    "exactUniqueRows": 51,
+    "imageOperators": 51,
+    "everyPageMarkers": "pass"
+  },
+  "clientAbortCleanupMs": 416,
+  "finalPages": 1
+}

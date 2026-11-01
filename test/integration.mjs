@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+
+const require = createRequire(import.meta.url);
+const { getDocument } = await import(
+  pathToFileURL(require.resolve("pdfjs-dist/legacy/build/pdf.mjs")).href
+);
 
 const baseUrl = process.env.EXPORT_HTML_TEST_URL || "http://127.0.0.1:2306";
 const token = process.env.EXPORT_HTML_BEARER_TOKEN;
@@ -37,16 +43,21 @@ async function post(path, body, authenticated = true) {
 }
 
 async function extractPdfText(bytes) {
-  const pdf = await getDocument({ data: bytes }).promise;
-  const pages = [];
+  const loadingTask = getDocument({ data: bytes });
+  try {
+    const pdf = await loadingTask.promise;
+    const pages = [];
 
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    pages.push(content.items.map((item) => item.str).join(" "));
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item) => item.str).join(" "));
+    }
+
+    return pages;
+  } finally {
+    await loadingTask.destroy();
   }
-
-  return pages;
 }
 
 const root = await fetch(`${baseUrl}/`);
@@ -89,7 +100,7 @@ assert.deepEqual(
 );
 
 const concurrentResponses = await Promise.all(
-  Array.from({ length: 5 }, () =>
+  Array.from({ length: 3 }, () =>
     post("/1/pdf", {
       html: "<p>IMP710_CONCURRENT</p>",
       export: { format: "A4" },
@@ -98,7 +109,7 @@ const concurrentResponses = await Promise.all(
 );
 assert.deepEqual(
   concurrentResponses.map((response) => response.status),
-  [200, 200, 200, 200, 200]
+  [200, 200, 200]
 );
 
 console.log(

@@ -18,8 +18,11 @@ jobs:
     steps:
       - name: Check out source
         run: |
-          git clone --depth 1 --branch "$GITHUB_REF_NAME" \
-            "https://github.com/$GITHUB_REPOSITORY.git" .
+          git init .
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git fetch --depth 1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 
       - name: Validate source
         env:
@@ -41,5 +44,5 @@ jobs:
         env:
           IMAGE: ghcr.io/svidify-sarl/export-html:${{ inputs.image_tag }}
         run: |
-          docker build --tag "$IMAGE" .
+          docker build --build-arg SOURCE_REVISION="$GITHUB_SHA" --tag "$IMAGE" .
           docker push "$IMAGE"

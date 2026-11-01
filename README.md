@@ -11,6 +11,24 @@ at least 32 bytes. The `/` and
 
 ## Usage
 
+### JSON request budget
+
+The authenticated converter JSON parser defaults to 104857600 bytes, matching
+the existing BusinessExplorer `web.config` request-filter ceiling. This repairs
+the unrelated koa-body 1MiB default that rejected an admitted photo-bearing
+document before rendering. It does not change the public backend request limit
+or promise that every document at that ceiling can render within its resource
+and duration bounds.
+
+`EXPORT_HTML_JSON_MAX_BYTES` may configure a smaller positive integer budget;
+zero, malformed or larger values fail startup. Known-length and chunked overflow
+return413 before rendering. Authentication, conversion concurrency/queue limits,
+finite render deadlines and page/context cleanup remain in place. The protected
+`/1/resources` response reports `jsonRequestLimitBytes` for exact runtime proof.
+
+The 1November2.83MB synthetic size witness is parser/regression evidence.
+Acceptance of the sender's exact retained document remains a separate replay.
+
 ```bash
 docker run -e "EXPORT_HTML_BEARER_TOKEN=replace-me" -p 2305:2305 <image>
 ```

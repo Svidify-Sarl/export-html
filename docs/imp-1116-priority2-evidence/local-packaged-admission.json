@@ -1,0 +1,19 @@
+{
+  "environment": "isolated local candidate",
+  "observedUtc": "2026-10-02T09:51:32.527Z",
+  "overflow": {
+    "status": 503,
+    "retryAfter": "1"
+  },
+  "final": {
+    "active": 0,
+    "queued": 0,
+    "rejected": 1,
+    "concurrency": 1,
+    "queueLimit": 2,
+    "queueWaitMs": 60000
+  },
+  "queuedCancellation": "pass",
+  "activeCancellation": "pass",
+  "status": "passed"
+}
