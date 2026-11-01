@@ -1,6 +1,8 @@
 const Router = require("@koa/router");
 const Koa = require("koa");
 const bodyParser = require("koa-body").default;
+const { jsonRequestBudgetBytes } = require("./utils/json-request-budget");
+const jsonRequestLimitBytes = jsonRequestBudgetBytes(process.env.EXPORT_HTML_JSON_MAX_BYTES);
 const errorHandler = require("./utils/middleware/error-handler");
 const { createBearerAuth } = require("./utils/middleware/bearer-auth");
 const requestLogger = require("./utils/middleware/request-logger");
@@ -54,7 +56,7 @@ app
   .use(requestLogger)
   .use(createBearerAuth(process.env.EXPORT_HTML_BEARER_TOKEN))
   .use(admission.middleware)
-  .use(bodyParser({ multipart: true }));
+  .use(bodyParser({ multipart: true, jsonLimit: jsonRequestLimitBytes }));
 
 const router = new Router();
 app.router = router;
@@ -73,7 +75,7 @@ router.get("/check-status", async (ctx) => {
 
 // Protected by the same bearer policy as conversions; public health remains small.
 router.get("/1/resources", async (ctx) => {
-  ctx.body = { ...(await resourceMeter.status()), admission: admission.status(), sourceRevision };
+  ctx.body = { ...(await resourceMeter.status()), admission: admission.status(), sourceRevision, jsonRequestLimitBytes };
 });
 
 // https://pptr.dev/#?product=Puppeteer&version=v8.0.0&show=api-pagescreenshotoptions
